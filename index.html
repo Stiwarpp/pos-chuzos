@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema POS Profesional - Chuzos y Filetes Al Carbón</title>
+    <style>
+        :root {
+            --primary-color: #e53935; 
+            --primary-dark: #b71c1c;
+            --secondary-color: #ffb74d;
+            --dark-color: #263238;
+            --light-color: #eceff1;
+            --success-color: #2e7d32;
+            --danger-color: #c62828;
+            --border-color: #cfd8dc;
+            --header-bg: #d32f2f; 
+            --info-color: #0288d1;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; padding: 20px; background-color: #f4f6f7; color: var(--dark-color); }
+        
+        header {
+            background-color: var(--header-bg);
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, rgba(183,28,28,0.4) 0%, rgba(229,57,53,0.1) 100%);
+            z-index: 1;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo-container {
+            margin-bottom: 15px;
+            background: white;
+            border-radius: 50%;
+            padding: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            width: 120px; height: 120px;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .logo-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        header h1 { margin: 0; font-size: 28px; color: white; text-transform: uppercase; letter-spacing: 1px; }
+        header p { margin: 5px 0 0 0; color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 300; }
+
+        .container { display: grid; grid-template-columns: 1fr; gap: 25px; max-width: 1400px; margin: 0 auto; }
+        @media (min-width: 992px) { .container { grid-template-columns: 1.2fr 0.8fr; } }
+
+        .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 4px solid var(--primary-color); margin-bottom: 20px; }
+        .card h2 { margin-top: 0; color: var(--primary-dark); border-bottom: 2px solid var(--light-color); padding-bottom: 12px; font-size: 19px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+        th { background-color: #f8f9fa; color: var(--dark-color); font-weight: 600; }
+
+        .input-stock, .input-precio, .input-text { width: 100%; padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; }
+        .input-stock, .input-precio { text-align: center; width: 90px; }
+
+        .btn {
+            background-color: var(--primary-color); color: white; border: none; padding: 12px 20px; border-radius: 4px;
+            cursor: pointer; font-weight: bold; font-size: 14px; transition: background 0.2s;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn:hover { background-color: var(--primary-dark); }
+        .btn-success { background-color: var(--success-color); }
+        .btn-success:hover { background-color: #1b5e20; }
+        .btn-danger { background-color: var(--danger-color); }
+        .btn-danger:hover { background-color: #b71c1c; }
+        .btn-info { background-color: var(--info-color); }
+        .btn-info:hover { background-color: #01579b; }
+        .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+        .form-inline { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-top: 15px; align-items: end; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; }
+        .form-group select, .form-group input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; }
+
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--border-color); font-size: 14px; }
+        .total-box { background-color: #fff3e0; padding: 15px; border-radius: 4px; margin-top: 15px; font-size: 20px; font-weight: bold; text-align: right; border: 1px solid var(--secondary-color); color: var(--primary-dark); }
+        .grand-total-box { background-color: #e8f5e9; padding: 15px; border-radius: 4px; margin-top: 15px; font-size: 22px; font-weight: bold; text-align: right; border: 1px solid var(--success-color); color: #1b5e20; }
+        
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; color: white; }
+        .bg-ok { background-color: var(--success-color); }
+        .bg-low { background-color: #ef6c00; }
+        .bg-none { background-color: var(--danger-color); }
+
+        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.85); display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 20px; font-weight: bold; color: var(--primary-dark); z-index: 9999; display: none; }
+
+        /* FORMATO IMPRESIÓN PDF TICKET */
+        #seccion-factura-pdf { display: none; }
+        @media print {
+            body * { visibility: hidden; }
+            #seccion-factura-pdf, #seccion-factura-pdf * { visibility: visible; }
+            #seccion-factura-pdf { display: block !important; position: absolute; left: 0; top: 0; width: 80mm; padding: 3mm; color: black; font-family: 'Courier New', monospace; font-size: 12px; }
+            .ticket-header-print { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 8px; margin-bottom: 10px; display: flex; flex-direction: column; align-items: center;}
+            .logo-print { width: 60px; height: 60px; margin-bottom: 5px;}
+            .ticket-tabla { width: 100%; margin-bottom: 10px; }
+            .ticket-tabla th, .ticket-tabla td { font-size: 11px; padding: 3px 0; border: none; font-family: 'Courier New', monospace; }
+            .text-right { text-align: right !important; }
+            .ticket-totales { border-top: 1px dashed #000; padding-top: 5px; }
+            .ticket-totales div { display: flex; justify-content: space-between; }
+            .ticket-footer { text-align: center; border-top: 1px dashed #000; padding-top: 8px; margin-top: 8px; font-size: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading-screen">
+        <div style="margin-bottom:10px;">🔄 Sincronizando Base de Datos Cloud...</div>
+        <div style="font-size:12px; color:#555;">Por favor espere un momento.</div>
+    </div>
+
+    <header>
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="image_0.png" alt="Logo Chuzos y Filetes Al Carbón" class="logo-img">
+            </div>
+            <h1>Chuzos y Filetes Al Carbón</h1>
+            <p>Sistema Maestro POS Profesional - Inventario, Catálogo y Facturación</p>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <div style="display: flex; flex-direction: column;">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--light-color); padding-bottom: 12px; margin-bottom: 10px;">
+                    <h2 style="margin:0; border:none; padding:0;">📦 Catálogo Codificado e Inventario Real</h2>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn btn-success btn-sm" onclick="guardarInventarioNube('Inventario guardado manualmente')">☁️ Guardar en Nube</button>
+                        <button class="btn btn-info btn-sm" onclick="exportarInventarioExcel()">🟢 Exportar Excel</button>
+                    </div>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table id="tabla-inventario">
+                        <thead>
+                            <tr>
+                                <th>Código SKU</th>
+                                <th>Descripción de Referencia</th>
+                                <th>Precio ($)</th>
+                                <th>Stock</th>
+                                <th>Estado</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpo-inventario"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>➕ Codificar y Agregar Nueva Referencia</h2>
+                <div class="form-inline">
+                    <div>
+                        <label style="font-weight:600; font-size:13px;">Código SKU</label>
+                        <input type="text" id="nuevo-codigo" class="input-text" placeholder="Ej: CHU-11">
+                    </div>
+                    <div>
+                        <label style="font-weight:600; font-size:13px;">Nombre de Referencia</label>
+                        <input type="text" id="nuevo-nombre" class="input-text" placeholder="Ej: Alitas Teriyaki">
+                    </div>
+                    <div>
+                        <label style="font-weight:600; font-size:13px;">Precio Venta ($)</label>
+                        <input type="number" id="nuevo-precio" class="input-text" placeholder="0">
+                    </div>
+                    <div>
+                        <label style="font-weight:600; font-size:13px;">Stock Inicial</label>
+                        <input type="number" id="nuevo-stock" class="input-text" placeholder="0">
+                    </div>
+                    <button class="btn btn-success" style="padding:10px;" onclick="crearNuevaReferencia()">💾 Guardar Ítem</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="align-self: start;">
+            <h2>🧾 Terminal de Facturación POS / Cotizaciones</h2>
+            
+            <div class="form-group">
+                <label for="cliente-nombre">Nombre del Cliente / Empresa:</label>
+                <input type="text" id="cliente-nombre" value="Consumidor Final">
+            </div>
+
+            <div class="form-group">
+                <label for="buscar-producto">Buscar Referencia (Escribe el Nombre del Producto):</label>
+                <input type="text" id="buscar-producto" list="lista-productos-autocomplete" placeholder="Escribe el nombre del producto..." autocomplete="off">
+                <datalist id="lista-productos-autocomplete"></datalist>
+            </div>
+
+            <div class="form-group">
+                <label for="cantidad-factura">Cantidad / Unidades:</label>
+                <input type="number" id="cantidad-factura" value="1" min="1">
+            </div>
+
+            <button class="btn" style="width: 100%;" onclick="agregarAlCarrito()">➕ Añadir a la Orden</button>
+
+            <h3 style="margin-top: 25px; font-size: 15px;">Ítems Seleccionados:</h3>
+            <div id="detalle-carrito">
+                <p style="color: #888; text-align: center; font-style: italic; padding: 10px;">La orden está vacía.</p>
+            </div>
+
+            <div class="total-box" id="total-factura">Total: $0</div>
+
+            <div style="margin-top: 18px; display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-success" style="flex: 1;" onclick="procesarVentaCompleta()">🖨️ Procesar Factura (PDF+TXT)</button>
+                    <button class="btn btn-danger" onclick="limpiarCarrito()">Vaciar</button>
+                </div>
+                <button class="btn btn-info" style="width: 100%;" onclick="procesarCotizacion()">📋 Generar Cotización (PDF+TXT)</button>
+            </div>
+        </div>
+
+        <div class="card" style="grid-column: 1 / -1;">
+            <h2>📊 Cierre de Caja Diario (Ventas de la Sesión Actual)</h2>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID Documento</th>
+                            <th>Fecha y Hora</th>
+                            <th>Cliente</th>
+                            <th>Desglose de Referencias</th>
+                            <th>Total Cobrado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpo-ventas">
+                        <tr><td colspan="6" style="text-align: center; color: #888; padding: 15px;">Sin transacciones del día registradas localmente.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="grand-total-box" id="gran-total-ventas">Total de Ventas del Día: $0</div>
+        </div>
+
+    </div>
+
+    <div id="seccion-factura-pdf">
+        <div class="ticket-header-print">
+            <img src="image_0.png" alt="Logo" class="logo-print">
+            <h3 id="pdf-titulo-documento">CHUZOS Y FILETES AL CARBÓN</h3>
+            <p>Comercializadora de Alimentos S.A.S</p>
+            <p>Nit: 901.452.381-4</p>
+            <p>----------------------------------</p>
+            <p style="text-align: left;" id="pdf-factura-id">FACTURA: FAC-000</p>
+            <p style="text-align: left;" id="pdf-factura-fecha">FECHA: --/--/----</p>
+            <p style="text-align: left;" id="pdf-factura-cliente">CLIENTE: --</p>
+        </div>
+        <table class="ticket-tabla">
+            <thead>
+                <tr>
+                    <th>CÓD/CANT</th>
+                    <th>PRODUCTO</th>
+                    <th class="text-right">TOTAL</th>
+                </tr>
+            </thead>
+            <tbody id="pdf-factura-items"></tbody>
+        </table>
+        <div class="ticket-totales">
+            <div style="font-weight: bold;"><span id="pdf-total-label">TOTAL NETO:</span><span id="pdf-total">$0</span></div>
+        </div>
+        <div class="ticket-footer">
+            <p id="pdf-footer-mensaje">¡Gracias por su compra!</p>
+            <p>Sabor Original al Carbón</p>
+        </div>
+    </div>
+
+    <script>
+        const URL_NUBE = "https://script.google.com/macros/s/AKfycbxg1GNIQW2TaqbSqddXdjGeB_pVFsHW6AUzUUhXv26-vTUueyjDXINOdBjwUnbi2IRsTw/exec";
+
+        let inventario = [
+            { id: "BBQ-01", nombre: "Alitas a la BBQ", precio: 15000, stock: 50 },
+            { id: "PIC-02", nombre: "Alitas picantes", precio: 15000, stock: 50 },
+            { id: "FIL-10", nombre: "Filetes de pollo x 10 unidades", precio: 28000, stock: 30 },
+            { id: "FIL-05", nombre: "Filetes de pollo x 5 unidades", precio: 14000, stock: 40 },
+            { id: "PECH-K", nombre: "Pechugas x Kilogramo (1 Kilo)", precio: 17000, stock: 35 },
+            { id: "CMUS-K", nombre: "Contra muslos x Kilogramo (1 Kilo)", precio: 12000, stock: 45 },
+            { id: "ALI-LB", nombre: "Alitas x Libra", precio: 6000, stock: 60 },
+            { id: "PAT-KG", nombre: "Patas de pollo x Kilogramo", precio: 6000, stock: 25 },
+            { id: "PAT-LB", nombre: "Patas de pollo x Libra", precio: 3000, stock: 30 },
+            { id: "SAL-12", nombre: "Salchichas x 12 unidades", precio: 12000, stock: 40 },
+            { id: "SAL-06", nombre: "Salchichas x 6 unidades", precio: 6000, stock: 40 },
+            { id: "CHIC-L", nombre: "Chicharrones x Libra", precio: 6000, stock: 50 },
+            { id: "MOL-LB", nombre: "Mollejas x Libra", precio: 8000, stock: 30 },
+            { id: "PAL-QS", nombre: "Palitos de queso", precio: 12000, stock: 40 },
+            { id: "PAL-BC", nombre: "Palitos de queso con bocadillo", precio: 13000, stock: 40 },
+            { id: "MAZ-FC", nombre: "Maza fácil", precio: 7000, stock: 20 },
+            { id: "PAT-10", nombre: "Patacones x 10 unidades", precio: 13500, stock: 25 },
+            { id: "PAT-20", nombre: "Patacones x 20 unidades", precio: 14000, stock: 25 },
+            { id: "MOLI-P", nombre: "Molipollo", precio: 8000, stock: 35 },
+            { id: "MOLI-C", nombre: "Molicarne", precio: 10000, stock: 35 },
+            { id: "REC-LB", nombre: "Recortes x Libra", precio: 5000, stock: 30 },
+            { id: "MEN-LB", nombre: "Menudencias x Libra", precio: 5000, stock: 40 },
+            { id: "RAB-KG", nombre: "Rabadillas x Kilogramo", precio: 5000, stock: 30 }
+        ];
+
+        let carrito = [];
+        let historialVentasLocal = [];
+        let consecutivoFactura = 5001;
+        let consecutivoCotizacion = 1001;
+
+        window.onload = function() {
+            if (URL_NUBE !== "") {
+                cargarDesdeNube();
+            } else {
+                sincronizarInterfaz();
+            }
+        }
+
+        function cargarDesdeNube() {
+            const screen = document.getElementById('loading-screen');
+            screen.style.display = "flex";
+            fetch(URL_NUBE + "?accion=getInventario", { redirect: "follow" })
+            .then(res => res.json())
+            .then(data => {
+                // El Apps Script puede devolver { inventario: [...] } o directamente un array
+                const lista = Array.isArray(data) ? data : (data.inventario || []);
+                if(lista.length > 0) inventario = lista;
+                sincronizarInterfaz();
+                screen.style.display = "none";
+                mostrarToast("☁️ Inventario sincronizado desde la nube.");
+            })
+            .catch(err => {
+                console.warn("Error cargando la nube, modo local:", err);
+                sincronizarInterfaz();
+                screen.style.display = "none";
+                mostrarToast("⚠️ Modo local: no se pudo conectar a la nube.", true);
+            });
+        }
+
+        function guardarInventarioNube(accionLabel) {
+            if(URL_NUBE === "") return;
+            fetch(URL_NUBE, {
+                redirect: "follow", method: "POST",
+                body: JSON.stringify({ accion: "guardarInventario", inventario: inventario })
+            })
+            .then(res => res.json())
+            .then(() => mostrarToast(`✅ ${accionLabel || "Inventario guardado"} en la nube.`))
+            .catch(e => {
+                console.warn("Error guardando en nube:", e);
+                mostrarToast("⚠️ Cambio guardado local. Fallo la sincronización.", true);
+            });
+        }
+
+        function mostrarToast(msg, esError) {
+            let toast = document.getElementById('toast-nube');
+            if(!toast) {
+                toast = document.createElement('div');
+                toast.id = 'toast-nube';
+                toast.style.cssText = `position:fixed;bottom:20px;right:20px;background:${esError?'#c62828':'#2e7d32'};color:white;padding:12px 20px;border-radius:8px;font-size:14px;font-weight:bold;z-index:99999;box-shadow:0 4px 12px rgba(0,0,0,0.25);transition:opacity 0.5s;`;
+                document.body.appendChild(toast);
+            }
+            toast.style.background = esError ? '#c62828' : '#2e7d32';
+            toast.textContent = msg;
+            toast.style.opacity = '1';
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => { toast.style.opacity = '0'; }, 3000);
+        }
+
+        function sincronizarInterfaz() {
+            renderInventario();
+            renderAutocompleteProductos();
+        }
+
+        function renderInventario() {
+            const tbody = document.getElementById('cuerpo-inventario');
+            tbody.innerHTML = '';
+            
+            inventario.forEach((prod, index) => {
+                let badge = `<span class="badge bg-ok">Óptimo</span>`;
+                if(prod.stock === 0) badge = `<span class="badge bg-none">Agotado</span>`;
+                else if(prod.stock <= 10) badge = `<span class="badge bg-low">Crítico</span>`;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><code>${prod.id}</code></td>
+                    <td><input type="text" class="input-text" value="${prod.nombre}" onchange="actualizarReferencia(${index}, 'nombre', this.value)"></td>
+                    <td><input type="number" class="input-precio" value="${prod.precio}" onchange="actualizarReferencia(${index}, 'precio', this.value)"></td>
+                    <td><input type="number" class="input-stock" value="${prod.stock}" onchange="actualizarReferencia(${index}, 'stock', this.value)"></td>
+                    <td>${badge}</td>
+                    <td><button class="btn btn-danger btn-sm" onclick="quitarReferencia(${index})">🗑️ Quitar</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Genera las opciones basadas en el NOMBRE del producto para el buscador interactivo
+        function renderAutocompleteProductos() {
+            const datalist = document.getElementById('lista-productos-autocomplete');
+            datalist.innerHTML = '';
+            inventario.forEach(prod => {
+                const option = document.createElement('option');
+                // Al poner el nombre en el value, el buscador dejará escrito el texto del nombre al seleccionarlo
+                option.value = prod.nombre; 
+                option.textContent = `[SKU: ${prod.id}] - $${prod.precio.toLocaleString()}`;
+                datalist.appendChild(option);
+            });
+        }
+
+        function crearNuevaReferencia() {
+            let cod = document.getElementById('nuevo-codigo').value.trim().toUpperCase();
+            let nom = document.getElementById('nuevo-nombre').value.trim();
+            let pre = parseInt(document.getElementById('nuevo-precio').value);
+            let sto = parseInt(document.getElementById('nuevo-stock').value);
+
+            if(!cod || !nom || isNaN(pre) || isNaN(sto)) {
+                alert("❌ Todos los campos son obligatorios para codificar una nueva referencia."); return;
+            }
+            if(inventario.some(p => p.id === cod)) {
+                alert(`❌ El SKU [${cod}] ya existe.`); return;
+            }
+
+            inventario.push({ id: cod, nombre: nom, precio: Math.max(0, pre), stock: Math.max(0, sto) });
+            document.getElementById('nuevo-codigo').value = '';
+            document.getElementById('nuevo-nombre').value = '';
+            document.getElementById('nuevo-precio').value = '';
+            document.getElementById('nuevo-stock').value = '';
+
+            sincronizarInterfaz();
+            guardarInventarioNube(`Referencia [${cod}] creada`);
+            alert(`✅ Referencia [${cod}] agregada con éxito.`);
+        }
+
+        function actualizarReferencia(index, propiedad, valor) {
+            if(propiedad === 'precio' || propiedad === 'stock') {
+                inventario[index][propiedad] = Math.max(0, parseInt(valor) || 0);
+            } else {
+                inventario[index][propiedad] = valor.trim() || "Referencia sin nombre";
+            }
+            // Solo actualiza el badge de estado, sin re-renderizar toda la tabla (evita pérdida de foco)
+            const filas = document.querySelectorAll('#cuerpo-inventario tr');
+            if(filas[index]) {
+                const stock = inventario[index].stock;
+                let badgeHTML = `<span class="badge bg-ok">Óptimo</span>`;
+                if(stock === 0) badgeHTML = `<span class="badge bg-none">Agotado</span>`;
+                else if(stock <= 10) badgeHTML = `<span class="badge bg-low">Crítico</span>`;
+                filas[index].cells[4].innerHTML = badgeHTML;
+            }
+            renderAutocompleteProductos();
+            // Debounce: guardar en nube 800ms después del último cambio
+            clearTimeout(actualizarReferencia._timer);
+            actualizarReferencia._timer = setTimeout(() => guardarInventarioNube("Inventario actualizado"), 800);
+        }
+
+        function quitarReferencia(index) {
+            if(confirm(`⚠️ ¿Desea eliminar la referencia [${inventario[index].id}] del catálogo?`)) {
+                inventario.splice(index, 1);
+                sincronizarInterfaz();
+                guardarInventarioNube("Referencia eliminada");
+            }
+        }
+
+        function agregarAlCarrito() {
+            const inputBuscar = document.getElementById('buscar-producto');
+            const nombreIngresado = inputBuscar.value.trim();
+            const cantidad = parseInt(document.getElementById('cantidad-factura').value);
+
+            if(!nombreIngresado || cantidad <= 0) return;
+            
+            // Busca la coincidencia en la base de datos comparándolo con el campo nombre
+            const producto = inventario.find(p => p.nombre.toLowerCase() === nombreIngresado.toLowerCase());
+
+            if(!producto) {
+                alert("❌ El producto especificado no coincide con ninguna descripción exacta del catálogo."); return;
+            }
+
+            if(producto.stock < cantidad) {
+                alert(`⚠️ Stock insuficiente. Solo quedan ${producto.stock} unidades de este producto.`); return;
+            }
+
+            const existente = carrito.find(item => item.id === producto.id);
+            if(existente) {
+                if(producto.stock < (existente.cantidad + cantidad)) { alert("Supera las existencias físicas."); return; }
+                existente.cantidad += cantidad;
+            } else {
+                carrito.push({ id: producto.id, nombre: producto.nombre, precio: producto.precio, cantidad: cantidad });
+            }
+            
+            // Restablece los campos de facturación
+            inputBuscar.value = '';
+            document.getElementById('cantidad-factura').value = 1;
+            renderCarrito();
+        }
+
+        function renderCarrito() {
+            const contenedor = document.getElementById('detalle-carrito');
+            const totalBox = document.getElementById('total-factura');
+            if(carrito.length === 0) {
+                contenedor.innerHTML = `<p style="color: #888; text-align: center; font-style: italic; padding: 10px;">La orden está vacía.</p>`;
+                totalBox.textContent = "Total: $0"; return;
+            }
+            contenedor.innerHTML = '';
+            let total = 0;
+            carrito.forEach((item, idx) => {
+                const sub = item.precio * item.cantidad; total += sub;
+                const div = document.createElement('div'); div.className = 'cart-item';
+                div.innerHTML = `<span><strong>[${item.id}]</strong> ${item.nombre} x${item.cantidad}</span><span>$${sub.toLocaleString()} <button class="btn btn-danger btn-sm" style="padding:2px 6px;" onclick="quitarDelCarrito(${idx})">✕</button></span>`;
+                contenedor.appendChild(div);
+            });
+            totalBox.textContent = `Total: $${total.toLocaleString()}`;
+        }
+
+        function quitarDelCarrito(idx) { carrito.splice(idx, 1); renderCarrito(); }
+        function limpiarCarrito() { carrito = []; renderCarrito(); }
+
+        function procesarVentaCompleta() {
+            if(carrito.length === 0) { alert("Añada referencias primero."); return; }
+
+            let cliente = document.getElementById('cliente-nombre').value.trim() || "Consumidor Final";
+            let numeroFactura = `FAC-${consecutivoFactura}`;
+            const ahora = new Date();
+            const fechaStr = ahora.toLocaleDateString() + ' ' + bandwidthTime();
+
+            carrito.forEach(item => {
+                const p = inventario.find(p => p.id === item.id);
+                if(p) p.stock -= item.cantidad;
+            });
+
+            document.getElementById('pdf-titulo-documento').textContent = "CHUZOS Y FILETES AL CARBÓN";
+            document.getElementById('pdf-total-label').textContent = "TOTAL NETO:";
+            document.getElementById('pdf-footer-mensaje').textContent = "¡Gracias por su compra!";
+
+            let totalFactura = 0;
+            let desgloseTexto = [];
+            let contenidoTxt = `========================================\n       CHUZOS Y FILETES AL CARBÓN       \n========================================\nFACTURA: ${numeroFactura}\nFECHA:   ${fechaStr}\nCLIENTE: ${cliente.toUpperCase()}\n----------------------------------------\n`;
+            
+            document.getElementById('pdf-factura-id').textContent = `FACTURA: ${numeroFactura}`;
+            document.getElementById('pdf-factura-fecha').textContent = `FECHA: ${fechaStr}`;
+            document.getElementById('pdf-factura-cliente').textContent = `CLIENTE: ${cliente.toUpperCase()}`;
+            const tablaPdf = document.getElementById('pdf-factura-items');
+            tablaPdf.innerHTML = '';
+
+            carrito.forEach(item => {
+                const sub = item.precio * item.cantidad;
+                totalFactura += sub;
+                desgloseTexto.push(`${item.id}(x${item.cantidad})`);
+                
+                contenidoTxt += `${item.id.padEnd(8, ' ')} | ${item.nombre.padEnd(20, ' ')} | $${sub}\n`;
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${item.id} x${item.cantidad}</td><td>${item.nombre}</td><td class="text-right">$${sub.toLocaleString()}</td>`;
+                tablaPdf.appendChild(tr);
+            });
+
+            contenidoTxt += `----------------------------------------\nTOTAL RECAUDADO: $${totalFactura}\n========================================`;
+            document.getElementById('pdf-total').textContent = `$${totalFactura.toLocaleString()}`;
+
+            historialVentasLocal.unshift({ id: numeroFactura, fecha: fechaStr, cliente: cliente, productos: desgloseTexto.join(', '), total: totalFactura, rawTxt: contenidoTxt });
+            
+            sincronizarInterfaz(); 
+            renderHistorialLocal();
+            descargarTxtFile(numeroFactura, contenidoTxt);
+
+            if(URL_NUBE !== "") {
+                let itemsCloud = carrito.map(i => ({ id: i.id, cantidad: i.cantidad }));
+                fetch(URL_NUBE, {
+                    redirect: "follow", method: "POST",
+                    body: JSON.stringify({ accion: "venta", id: numeroFactura, fecha: fechaStr, cliente: cliente.toUpperCase(), productos: desgloseTexto.join(', '), total: totalFactura, items: itemsCloud })
+                })
+                .then(() => guardarInventarioNube("Stock descontado por venta"))
+                .catch(e => console.log("Error asíncrono nube: ", e));
+            }
+
+            setTimeout(() => {
+                window.print();
+                consecutivoFactura++;
+                limpiarCarrito();
+                document.getElementById('cliente-nombre').value = "Consumidor Final";
+            }, 400);
+        }
+
+        function procesarCotizacion() {
+            if(carrito.length === 0) { alert("Añada referencias primero para cotizar."); return; }
+
+            let cliente = document.getElementById('cliente-nombre').value.trim() || "Cliente Interesado";
+            let numeroCotizacion = `COT-${consecutivoCotizacion}`;
+            const ahora = new Date();
+            const fechaStr = ahora.toLocaleDateString() + ' ' + bandwidthTime();
+
+            document.getElementById('pdf-titulo-documento').textContent = "COTIZACIÓN COMERCIAL";
+            document.getElementById('pdf-total-label').textContent = "TOTAL ESTIMADO:";
+            document.getElementById('pdf-footer-mensaje').textContent = "Validez de oferta: 15 días calendario.";
+
+            let totalCotizacion = 0;
+            let contenidoTxt = `========================================\n          COTIZACIÓN COMERCIAL          \n       CHUZOS Y FILETES AL CARBÓN       \n========================================\nCOTIZACIÓN: ${numeroCotizacion}\nFECHA:      ${fechaStr}\nCLIENTE:    ${cliente.toUpperCase()}\n----------------------------------------\n`;
+            
+            document.getElementById('pdf-factura-id').textContent = `COTIZACIÓN: ${numeroCotizacion}`;
+            document.getElementById('pdf-factura-fecha').textContent = `FECHA: ${fechaStr}`;
+            document.getElementById('pdf-factura-cliente').textContent = `CLIENTE: ${cliente.toUpperCase()}`;
+            const tablaPdf = document.getElementById('pdf-factura-items');
+            tablaPdf.innerHTML = '';
+
+            carrito.forEach(item => {
+                const sub = item.precio * item.cantidad;
+                totalCotizacion += sub;
+                
+                contenidoTxt += `${item.id.padEnd(8, ' ')} | ${item.nombre.padEnd(20, ' ')} | $${sub}\n`;
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${item.id} x${item.cantidad}</td><td>${item.nombre}</td><td class="text-right">$${sub.toLocaleString()}</td>`;
+                tablaPdf.appendChild(tr);
+            });
+
+            contenidoTxt += `----------------------------------------\nTOTAL ESTIMADO: $${totalCotizacion}\nPrecios sujetos a cambios.\n========================================`;
+            document.getElementById('pdf-total').textContent = `$${totalCotizacion.toLocaleString()}`;
+
+            descargarTxtFile(numeroCotizacion, contenidoTxt);
+
+            setTimeout(() => {
+                window.print();
+                consecutivoCotizacion++;
+                limpiarCarrito();
+                document.getElementById('cliente-nombre').value = "Consumidor Final";
+            }, 400);
+        }
+
+        function bandwidthTime() { return new Date().toLocaleTimeString(); }
+
+        function descargarTxtFile(num, txt) {
+            const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `${num}.txt`;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        }
+
+        function renderHistorialLocal() {
+            const tbody = document.getElementById('cuerpo-ventas');
+            tbody.innerHTML = '';
+            
+            let totalCajaDiaria = 0;
+
+            if(historialVentasLocal.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #888; padding: 15px;">Sin transacciones del día registradas localmente.</td></tr>`; 
+                document.getElementById('gran-total-ventas').textContent = "Total de Ventas del Día: $0";
+                return;
+            }
+
+            historialVentasLocal.forEach(v => {
+                totalCajaDiaria += v.total;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${v.id}</strong></td><td>${v.fecha}</td><td>${v.cliente}</td><td><small>${v.productos}</small></td>
+                    <td style="color:var(--success-color); font-weight:bold;">$${v.total.toLocaleString()}</td>
+                    <td><button class="btn btn-sm" style="background-color:#546e7a;" onclick="descargarTxtFile(\`${v.id}\`,\`${v.rawTxt}\`)">📄 TXT</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('gran-total-ventas').textContent = `Total de Ventas del Día: $${totalCajaDiaria.toLocaleString()}`;
+        }
+
+        function exportarInventarioExcel() {
+            let csvContenido = "\uFEFF";
+            csvContenido += "Código SKU;Descripción de Referencia;Precio ($);Stock Disponible;Estado Mínimo\r\n";
+
+            inventario.forEach(prod => {
+                let estadoText = "Óptimo";
+                if(prod.stock === 0) estadoText = "Agotado";
+                else if(prod.stock <= 10) estadoText = "Crítico";
+
+                let nombreLimpio = prod.nombre.replace(/;/g, ',');
+                csvContenido += `${prod.id};${nombreLimpio};${prod.precio};${prod.stock};${estadoText}\r\n`;
+            });
+
+            const blob = new Blob([csvContenido], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Inventario_Chuzos_y_Filetes_${new Date().toISOString().slice(0,10)}.xlsx`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
